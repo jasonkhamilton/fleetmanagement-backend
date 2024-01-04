@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+require('dotenv').config();
 
 const assetRoutes = require('./src/routes/assetRoutes');
 const readingRoutes = require('./src/routes/readingRoutes');
