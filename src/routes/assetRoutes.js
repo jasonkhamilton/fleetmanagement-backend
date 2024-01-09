@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const upload = multer();
 const pool = require('../../db');
 
 // Example CRUD routes for assets
@@ -9,6 +11,50 @@ router.post('/', createAsset);
 router.put('/:id', updateAsset);
 router.patch('/:id', partiallyUpdateAsset);
 router.delete('/:id', deleteAsset);
+
+// Image operations
+router.get('/image/:id', getAssetImage);
+router.post('/image/:id', upload.single('image'), uploadAssetImage);
+router.delete('/image/:id', deleteAssetImage);
+
+// Image functions
+async function getAssetImage (req, res) {
+    try {
+        const assetId = req.params.id;
+        const query = 'SELECT * FROM asset_images WHERE asset_ref = $1';
+        const { rows } = await pool.query(query, [assetId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Asset Image not found' });
+        }
+        res.json(rows[0]);
+    } catch (err) {
+        console.error('Error fetching asset image', err);
+        res.status(500).send('Internal Server Error');
+    }
+}
+
+async function uploadAssetImage (req, res) {
+    try {
+        if (!req.file) {
+            return res.status(400).send('No File Uploaded.');
+        }
+
+        const assetId = req.params.id;
+        const imageBinary = req.file.buffer;
+
+        const query = 'INSERT INTO asset_images (asset_ref, image_data) VALUES ($1, $2)';
+        await pool.query(query, [assetId, imageBinary]);
+
+        return res.status(200).send('Image Uploaded Successfully.');
+    } catch (err) {
+        console.error('Error uploading asset image', err);
+        res.status(500).send('Internal Server Error');
+    }
+}
+
+async function deleteAssetImage (req, res) {
+
+}
 
 // Functions handling route logic
 async function getAllAssets(req, res) {
