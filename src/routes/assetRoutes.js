@@ -21,7 +21,7 @@ router.delete('/image/:id', deleteAssetImage);
 async function getAssetImage (req, res) {
     try {
         const assetId = req.params.id;
-        const query = 'SELECT * FROM asset_images WHERE asset_ref = $1';
+        const query = 'SELECT * FROM asset_images WHERE asset_id = $1';
         const { rows } = await pool.query(query, [assetId]);
         if (rows.length === 0) {
             return res.status(404).json({ message: 'Asset Image not found' });
@@ -42,7 +42,7 @@ async function uploadAssetImage (req, res) {
         const assetId = req.params.id;
         const imageBinary = req.file.buffer;
 
-        const query = 'INSERT INTO asset_images (asset_ref, image_data) VALUES ($1, $2)';
+        const query = 'INSERT INTO asset_images (asset_id, image_data) VALUES ($1, $2)';
         await pool.query(query, [assetId, imageBinary]);
 
         return res.status(200).send('Image Uploaded Successfully.');
