@@ -98,10 +98,11 @@ async function createAsset(req, res) {
             '${asset.year}',
             '${asset.type}')`;
         const result = await pool.query(query);
-        if (result.rows.length === 0) {
-            return res.status(404).json({ message: 'Asset not created' });
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: 'Asset not created.' });
+        } else {
+            return res.status(200).json({ message: 'Asset created successfully.'});
         }
-        res.json(result.rows[0]);
     } catch (err) {
         console.error('Error creating asset: ', err);
         res.status(500).send('Internal Server Error');
