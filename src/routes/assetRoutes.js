@@ -114,9 +114,16 @@ function partiallyUpdateAsset(req, res) { /* Logic to partially update an asset 
 
 async function deleteAsset(req, res) {
     try {
-
+        const query = `DELETE FROM assets WHERE id='${req.params.id}'`;
+        const result = await pool.query(query);
+        // console.log(result);
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: 'Asset not deleted.' });
+        } else {
+            return res.status(200).json({ message: 'Asset deleted successfully.' });
+        }
     } catch (err) {
-        
+        res.status(500).send('Internal Server Error');
     } 
 }
 
