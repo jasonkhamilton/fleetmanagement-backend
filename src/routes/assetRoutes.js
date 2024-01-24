@@ -90,13 +90,15 @@ async function createAsset(req, res) {
             make,
             model,
             year,
-            type)
+            type,
+            serial_number)
         VALUES ('${asset.reference}',
             '${asset.registrationNumber}',
             '${asset.make}',
             '${asset.model}',
             '${asset.year}',
-            '${asset.type}')`;
+            '${asset.type}',
+            '${asset.serial}')`;
         const result = await pool.query(query);
         if (result.rowCount === 0) {
             return res.status(404).json({ message: 'Asset not created.' });
