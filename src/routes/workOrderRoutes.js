@@ -7,6 +7,7 @@ const pool = require('../../db');
 // Example CRUD routes for work orders
 router.get('/', getAllWorkOrders);
 router.get('/:id', getWorkOrderById);
+router.get('/byAsset/:id', getWorkOrdersByAsset);
 router.post('/', createWorkOrder);
 // router.put('/:id', updateAsset);
 // router.patch('/:id', partiallyUpdateAsset);
@@ -40,6 +41,21 @@ async function getWorkOrderById (req, res) {
             return res.status(404).json({ message: 'Work order not found' });
         }
         res.json(rows[0]);
+    } catch (err) {
+        console.error('Error fetching work order', err);
+        res.status(500).send('Internal Server Error');
+    }
+}
+
+async function getWorkOrdersByAsset (req, res) {
+    try {
+        const assetId = req.params.id;
+        const query = 'SELECT * FROM work_orders WHERE asset_id = $1';
+        const { rows } = await pool.query(query, [assetId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Work order not found' });
+        }
+        res.json(rows);
     } catch (err) {
         console.error('Error fetching work order', err);
         res.status(500).send('Internal Server Error');
