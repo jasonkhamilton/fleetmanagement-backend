@@ -62,11 +62,10 @@ async function createReading(req, res) {
             '${reading.type}',
             '${reading.measurement}')`;
         const result = await pool.query(query);
-        console.log(result);
         if (result.rowCount <= 0) {
             return res.status(404).json({ message: 'Reading not created' });
         }
-        res.json(res.status(200));
+        res.status(200).json({ message: 'Reading created.' });
     } catch (err) {
         console.error('Error creating reading: ', err);
         res.status(500).send('Internal Server Error');
