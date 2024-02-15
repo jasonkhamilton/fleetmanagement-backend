@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+const csvParser = require('csv-parser');
+const { Readable } = require('stream');
+const fs = require('fs');
 const upload = multer();
 const pool = require('../../db');
 
@@ -12,10 +15,61 @@ router.put('/:id', updateAsset);
 router.patch('/:id', partiallyUpdateAsset);
 router.delete('/:id', deleteAsset);
 
+// file upload operations
+router.post('/upload', upload.single('csvFile'), uploadAssetsFromFile);
+
 // Image operations
 router.get('/image/:id', getAssetImage);
 router.post('/image/:id', upload.single('image'), uploadAssetImage);
 router.delete('/image/:id', deleteAssetImage);
+
+// Upload Assets from CSV
+async function uploadAssetsFromFile (req, res) {
+    try {
+        if (!req.file) {
+            return res.status(400).send('No File Uploaded.');
+        }
+        
+        const fileStream = new Readable();
+        fileStream.push(req.file.buffer);
+        fileStream.push(null);
+
+        let insertQuery = `INSERT INTO assets (reference,
+            registration_number,
+            make,
+            model,
+            year,
+            type,
+            serial_number) VALUES `;
+
+        fileStream.pipe(csvParser())
+            .on('data', (row) => {
+                const valueString = `('${ row['Fleet #'] }', '${ row['REGO'] }', '${ row['Make'] }', '${ row['Model'].replace("'", '') }', 2000, 'Unkown', NULL),`;
+                insertQuery += valueString;
+            })
+            .on('end', async () => {
+                // Remove last ',' and end query with ';'
+                insertQuery = insertQuery.slice(0, -1);
+                insertQuery += ';';
+
+                console.log(insertQuery);
+
+                try {
+                    const result = await pool.query(insertQuery);
+                    if (result.rowCount === 0) {
+                        return res.status(404).json({ message: 'Assets not created.' });
+                    } else {
+                        return res.status(200).json({ message: 'Assets created successfully.'});
+                    }
+                } catch (error) {
+                    console.error('Error creating assets: ', error);
+                    res.status(500).send('Internal Server Error');
+                }
+            });
+    } catch (err) {
+        console.error('Error uploading CSV: ', err);
+    }
+}
 
 // Image functions
 async function getAssetImage (req, res) {
