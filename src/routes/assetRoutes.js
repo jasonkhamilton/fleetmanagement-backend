@@ -13,7 +13,8 @@ router.get('/:id', getAssetById);
 router.post('/', createAsset);
 router.put('/:id', updateAsset);
 router.patch('/:id', partiallyUpdateAsset);
-router.delete('/:id', deleteAsset);
+router.delete('/deleteall', deleteAllAssets);
+// router.delete('/:id', deleteAsset);
 
 // file upload operations
 router.post('/upload', upload.single('csvFile'), uploadAssetsFromFile);
@@ -177,6 +178,20 @@ async function deleteAsset(req, res) {
             return res.status(404).json({ message: 'Asset not deleted.' });
         } else {
             return res.status(200).json({ message: 'Asset deleted successfully.' });
+        }
+    } catch (err) {
+        res.status(500).send('Internal Server Error');
+    } 
+}
+
+async function deleteAllAssets(req, res) {
+    try {
+        const query = `DELETE FROM asset_images WHERE asset_id IN (SELECT id FROM assets); DELETE FROM assets`;
+        const result = await pool.query(query);
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: 'Assets not deleted.' });
+        } else {
+            return res.status(200).json({ message: 'Assets deleted successfully.' });
         }
     } catch (err) {
         res.status(500).send('Internal Server Error');
