@@ -1,16 +1,9 @@
 const express = require('express');
 const cors = require('cors');
-const nodemailer = require('nodemailer');
+
 require('dotenv').config();
 
-// Configure the transporter (for Gmail)
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'jsonhmilton@gmail.com',    // Your email
-        pass: 'fennec fox'      // Your email password (you may need to use an app-specific password)
-    }
-});
+
 
 const assetRoutes = require('./src/routes/assetRoutes');
 const readingRoutes = require('./src/routes/readingRoutes');

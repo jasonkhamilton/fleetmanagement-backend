@@ -4,6 +4,16 @@ const multer = require('multer');
 const upload = multer();
 const pool = require('../../db');
 
+const nodemailer = require('nodemailer');
+// Configure the transporter (for Gmail)
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'jsonhmilton@gmail.com',    // Your email
+        pass: 'fennec fox'      // Your email password (you may need to use an app-specific password)
+    }
+});
+
 // Example CRUD routes for work orders
 router.get('/', getAllWorkOrders);
 router.get('/:id', getWorkOrderById);
@@ -133,7 +143,7 @@ async function createWorkOrder (req, res) {
         } else {
             const mailOptions = {
                 from: 'jsonhmilton@gmail.com',
-                to: 'jason.hamilton@greenbynature.com.au',  // You can use the customer's email or other relevant emails
+                to: 'jason@jhwebdesign.com.au',  // You can use the customer's email or other relevant emails
                 subject: `Work Order #${workOrder.id}`,
                 text: `A new work order has been created for Asset #${workOrder.assetId}.\n\nDescription: ${workOrder.description}\nTime: ${workOrder.time} hours\nCost (Parts): ${workOrder.costParts}\nCost (Labor): ${workOrder.costLabour}`,
                 html: `<h1>Work Order #${workOrder.id}</h1>
