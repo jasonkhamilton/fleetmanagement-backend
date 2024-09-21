@@ -131,6 +131,25 @@ async function createWorkOrder (req, res) {
         if (result.rowCount === 0) {
             return res.status(404).json({ message: 'Work order not created.' });
         } else {
+            const mailOptions = {
+                from: 'jsonhmilton@gmail.com',
+                to: 'jason.hamilton@greenbynature.com.au',  // You can use the customer's email or other relevant emails
+                subject: `Work Order #${workOrder.id}`,
+                text: `A new work order has been created for Asset #${workOrder.assetId}.\n\nDescription: ${workOrder.description}\nTime: ${workOrder.time} hours\nCost (Parts): ${workOrder.costParts}\nCost (Labor): ${workOrder.costLabour}`,
+                html: `<h1>Work Order #${workOrder.id}</h1>
+                        <p>A new work order has been created for Asset #${workOrder.assetId}.</p>
+                        <p><strong>Description:</strong> ${workOrder.description}</p>
+                        <p><strong>Time:</strong> ${workOrder.time} hours</p>
+                        <p><strong>Cost (Parts):</strong> ${workOrder.costParts}</p>
+                        <p><strong>Cost (Labor):</strong> ${workOrder.costLabour}</p>`
+            };
+            
+            try {
+                await transporter.sendMail(mailOptions);
+                console.log('Email sent successfully');
+            } catch (error) {
+                console.error('Error sending email:', error);
+            }
             return res.status(200).json({ message: 'Work order created successfully.'});
         }
     } catch (err) {
