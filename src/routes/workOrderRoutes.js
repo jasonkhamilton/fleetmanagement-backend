@@ -7,10 +7,11 @@ const pool = require('../../db');
 const nodemailer = require('nodemailer');
 // Configure the transporter (for Gmail)
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'mail.smtp2go.com',
+    port: 587,
     auth: {
-        user: 'jsonhmilton@gmail.com',    // Your email
-        pass: 'fennec fox'      // Your email password (you may need to use an app-specific password)
+        user: process.env.SMTP_USER,    // Your email
+        pass: process.env.SMTP_PASS      // Your email password (you may need to use an app-specific password)
     }
 });
 
@@ -136,17 +137,18 @@ async function createWorkOrder (req, res) {
             '${workOrder.time}',
             '${workOrder.costParts}',
             '${workOrder.costLabour}',
-            '${workOrder.isOpen}')`;
+            '${workOrder.isOpen}')
+        RETURNING work_order_id`;
         const result = await pool.query(query);
         if (result.rowCount === 0) {
             return res.status(404).json({ message: 'Work order not created.' });
         } else {
             const mailOptions = {
-                from: 'jsonhmilton@gmail.com',
+                from: 'fleetmanagement-assistant@jhwebdesign.com.au',
                 to: 'jason@jhwebdesign.com.au',  // You can use the customer's email or other relevant emails
-                subject: `Work Order #${workOrder.id}`,
+                subject: `Work Order #${result.rows[0].work_order_id}`,
                 text: `A new work order has been created for Asset #${workOrder.assetId}.\n\nDescription: ${workOrder.description}\nTime: ${workOrder.time} hours\nCost (Parts): ${workOrder.costParts}\nCost (Labor): ${workOrder.costLabour}`,
-                html: `<h1>Work Order #${workOrder.id}</h1>
+                html: `<h1>Work Order #${result.rows[0].work_order_id}</h1>
                         <p>A new work order has been created for Asset #${workOrder.assetId}.</p>
                         <p><strong>Description:</strong> ${workOrder.description}</p>
                         <p><strong>Time:</strong> ${workOrder.time} hours</p>
@@ -160,7 +162,7 @@ async function createWorkOrder (req, res) {
             } catch (error) {
                 console.error('Error sending email:', error);
             }
-            return res.status(200).json({ message: 'Work order created successfully.'});
+            return res.status(200).json({ message: `Work order #${result.rows[0].work_order_id} created successfully.`});
         }
     } catch (err) {
         console.error('Error creating work order: ', err);
