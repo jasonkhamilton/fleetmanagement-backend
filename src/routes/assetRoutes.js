@@ -153,12 +153,12 @@ async function createAsset(req, res) {
             '${asset.model}',
             '${asset.year}',
             '${asset.type}',
-            '${asset.serial}')`;
+            '${asset.serial}') RETURNING id`;
         const result = await pool.query(query);
         if (result.rowCount === 0) {
             return res.status(404).json({ message: 'Asset not created.' });
         } else {
-            return res.status(200).json({ message: 'Asset created successfully.'});
+            return res.status(200).json({ message: 'Asset created successfully.', id: result.rows[0].id});
         }
     } catch (err) {
         console.error('Error creating asset: ', err);
